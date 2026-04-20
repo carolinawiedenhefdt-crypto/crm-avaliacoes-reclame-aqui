@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Reclame Aqui</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:wght@600;700&display=swap');
+
+  :root {
+    --l1: #f5f0ff; --l2: #e8d9ff; --l3: #cba8ff;
+    --p4: #a855f7; --p5: #8b35e8; --p6: #6d1fd4; --p7: #4c0fa8; --p8: #2e0878;
+    --white: #fff; --g50: #faf9fd; --g100: #f0ebfa; --g200: #ddd5f0;
+    --g500: #7c6f9e; --g700: #3d3560;
+    --ok: #22c55e; --err: #ef4444; --warn: #f59e0b; --info: #3b82f6;
+    --r: 14px; --sh: 0 4px 24px rgba(109,31,212,.10); --shl: 0 8px 40px rgba(109,31,212,.16);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#f5f0ff 0%,#e8d9ff 50%,#cba8ff22 100%);min-height:100vh;color:var(--g700)}
+
+  /* HEADER */
+  header{background:linear-gradient(135deg,var(--p7) 0%,var(--p5) 60%,var(--l3) 100%);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 32px rgba(109,31,212,.22)}
+  .logo{display:flex;align-items:center;gap:14px}
+  .logo-icon{width:44px;height:44px;background:rgba(255,255,255,.18);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  header h1{font-family:'Playfair Display',serif;color:#fff;font-size:1.4rem;letter-spacing:-.5px}
+  header p{color:var(--l2);font-size:.78rem;margin-top:2px}
+  .hactions{display:flex;gap:10px;align-items:center}
+  .btn-cfg{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.83rem;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .btn-cfg:hover{background:rgba(255,255,255,.28)}
+
+  /* NAV */
+  nav{background:#fff;display:flex;gap:4px;padding:10px 32px;border-bottom:1px solid var(--g200);box-shadow:0 2px 8px rgba(109,31,212,.05);overflow-x:auto}
+  .tab{padding:8px 18px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--g500);font-weight:500;transition:all .2s;white-space:nowrap}
+  .tab:hover{background:var(--l1);color:var(--p6)}
+  .tab.on{background:var(--p5);color:#fff}
+
+  /* MAIN */
+  main{padding:24px 32px;max-width:1440px;margin:0 auto}
+
+  /* CARD */
+  .card{background:#fff;border-radius:var(--r);padding:24px;box-shadow:var(--sh);border:1px solid var(--l2);margin-bottom:20px}
+  .card h2{font-family:'Playfair Display',serif;color:var(--p7);margin-bottom:6px;font-size:1.2rem}
+  .card>p{color:var(--g500);font-size:.88rem;margin-bottom:18px}
+
+  /* FORM */
+  .frow{display:flex;gap:12px;flex-wrap:wrap}
+  .fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:200px}
+  .fg label{font-size:.8rem;font-weight:600;color:var(--g700)}
+  .fg input,.fg select{padding:9px 12px;border:1.5px solid var(--g200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--g700);background:var(--g50);transition:border .2s}
+  .fg input:focus,.fg select:focus{outline:none;border-color:var(--p4);background:#fff}
+
+  /* BUTTONS */
+  .btn{border:none;padding:10px 22px;border-radius:9px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;transition:all .2s}
+  .btn-p{background:linear-gradient(135deg,var(--p6),var(--p4));color:#fff;box-shadow:0 3px 12px rgba(109,31,212,.25)}
+  .btn-p:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(109,31,212,.35)}
+  .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .btn-g{background:var(--g100);color:var(--g700)}
+  .btn-g:hover{background:var(--g200)}
+  .btn-ok{background:linear-gradient(135deg,#059669,#34d399);color:#fff;box-shadow:0 3px 12px rgba(5,150,105,.25)}
+
+  /* IMPORT ZONE */
+  .drop{border:2px dashed var(--l3);border-radius:var(--r);padding:32px;text-align:center;background:var(--l1);cursor:pointer;transition:all .2s;margin-bottom:16px}
+  .drop:hover,.drop.over{border-color:var(--p5);background:var(--l2)}
+  .drop .di{font-size:2.6rem;margin-bottom:10px}
+  .drop h3{color:var(--p6);margin-bottom:4px}
+  .drop p{color:var(--g500);font-size:.83rem}
+  #fi{display:none}
+
+  /* MONTH PILLS */
+  .mpbar{background:#fff;border-radius:var(--r);padding:14px 20px;box-shadow:var(--sh);border:1px solid var(--l2);display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+  .mpbar span{font-weight:600;color:var(--p7);font-size:.88rem;white-space:nowrap}
+  .pills{display:flex;gap:7px;flex-wrap:wrap}
+  .pill{padding:5px 14px;border-radius:20px;border:1.5px solid var(--l3);background:#fff;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--p6);transition:all .2s}
+  .pill:hover{background:var(--l1)}
+  .pill.on{background:var(--p5);color:#fff;border-color:var(--p5)}
+
+  /* STATS */
+  .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin-bottom:20px}
+  .sc{background:#fff;border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);border:1px solid var(--l2);position:relative;overflow:hidden}
+  .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--bc,var(--p4))}
+  .sc .sl{font-size:.76rem;color:var(--g500);font-weight:500;margin-bottom:5px}
+  .sc .sv{font-size:1.9rem;font-weight:700;color:var(--p7);line-height:1}
+  .sc .ss{font-size:.72rem;color:var(--g500);margin-top:3px}
+
+  /* TABLE */
+  .tcrd{background:#fff;border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--l2);overflow:hidden;margin-bottom:20px}
+  .th{padding:16px 22px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .th h3{font-family:'Playfair Display',serif;color:var(--p7);font-size:1.05rem}
+  .srch{padding:8px 12px;border:1.5px solid var(--g200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;width:220px;transition:border .2s}
+  .srch:focus{outline:none;border-color:var(--p4)}
+  .tw{overflow-x:auto;max-height:500px;overflow-y:auto}
+  table{width:100%;border-collapse:collapse;font-size:.82rem}
+  thead{position:sticky;top:0;z-index:2}
+  thead th{background:var(--l1);color:var(--p7);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1.5px solid var(--l2);white-space:nowrap}
+  tbody tr:hover{background:var(--l1)}
+  tbody td{padding:9px 12px;border-bottom:1px solid var(--g100);vertical-align:middle}
+
+  /* BADGES */
+  .b{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:.73rem;font-weight:600;white-space:nowrap}
+  .bp{background:var(--l2);color:var(--p7)}
+  .bg{background:#dcfce7;color:#166534}
+  .br{background:#fee2e2;color:#991b1b}
+  .by{background:#fef9c3;color:#854d0e}
+  .bl{background:var(--g100);color:var(--g500)}
+  .bb{background:#dbeafe;color:#1e40af}
+
+  /* INLINE SELECTS */
+  .ts{padding:4px 7px;border:1.5px solid var(--g200);border-radius:7px;font-size:.78rem;font-family:'DM Sans',sans-serif;background:#fff;color:var(--g700);cursor:pointer;min-width:110px}
+  .ts:focus{outline:none;border-color:var(--p4)}
+  .ti{padding:4px 7px;border:1.5px solid var(--g200);border-radius:7px;font-size:.78rem;font-family:'DM Sans',sans-serif;background:#fff;color:var(--g700);width:130px}
+  .ti:focus{outline:none;border-color:var(--p4)}
+
+  /* CHARTS */
+  .cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px;margin-bottom:20px}
+  .cc{background:#fff;border-radius:var(--r);padding:20px;box-shadow:var(--sh);border:1px solid var(--l2)}
+  .cc h3{font-family:'Playfair Display',serif;color:var(--p7);font-size:.95rem;margin-bottom:14px}
+  .cw{position:relative;height:230px}
+
+  /* ANALYST CARDS */
+  .agrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  .ac{background:#fff;border-radius:var(--r);padding:20px;box-shadow:var(--sh);border:1px solid var(--l2);border-top:4px solid var(--tc,var(--p4))}
+  .ac h4{font-size:1.05rem;font-weight:700;color:var(--p7);margin-bottom:12px}
+  .arow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--g100)}
+  .arow:last-child{border:none}
+  .arow .al{font-size:.81rem;color:var(--g500)}
+  .arow .av{font-weight:700;color:var(--p7)}
+  .pbar{background:var(--g100);border-radius:99px;height:7px;overflow:hidden;margin-top:8px}
+  .pb{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--p5),var(--l3));transition:width .5s}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--p7);color:#fff;padding:11px 20px;border-radius:10px;box-shadow:var(--shl);font-size:.88rem;opacity:0;transform:translateY(14px);transition:all .3s;z-index:9999;max-width:310px}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast.ok{background:#16a34a}
+  .toast.err{background:var(--err)}
+
+  /* MODAL */
+  .mo{position:fixed;inset:0;background:rgba(30,10,60,.45);z-index:1000;display:none;align-items:center;justify-content:center}
+  .mo.show{display:flex}
+  .md{background:#fff;border-radius:18px;padding:28px;width:90%;max-width:500px;box-shadow:var(--shl);max-height:90vh;overflow-y:auto}
+  .md h2{font-family:'Playfair Display',serif;color:var(--p7);margin-bottom:16px}
+  .mact{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+
+  .sec{display:none}
+  .sec.on{display:block}
+
+  .spin{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:5px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .empty{text-align:center;padding:50px 20px;color:var(--g500)}
+  .empty .ei{font-size:2.8rem;margin-bottom:12px}
+  .empty h3{color:var(--p6);margin-bottom:5px}
+
+  .info-box{background:var(--l1);border:1px solid var(--l2);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:.85rem;color:var(--g700);line-height:1.6}
+  .info-box strong{color:var(--p6)}
+
+  @media(max-width:768px){
+    main{padding:14px}header{padding:14px}nav{padding:8px 14px}
+    .cgrid{grid-template-columns:1fr}.agrid{grid-template-columns:1fr}
+    .sgrid{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⭐</div>
+    <div>
+      <h1>CRM Reclame Aqui</h1>
+      <p>Gestão de avaliações e contatos</p>
+    </div>
+  </div>
+  <div class="hactions">
+    <span id="connStatus" style="color:var(--l2);font-size:.8rem">⚪ Não conectado</span>
+    <button class="btn-cfg" onclick="openCfg()">⚙️ Configurar</button>
+  </div>
+</header>
+
+<nav>
+  <button class="tab on" onclick="go('dashboard')">📊 Dashboard</button>
+  <button class="tab" onclick="go('reclamacoes')">📋 Reclamações</button>
+  <button class="tab" onclick="go('analistas')">👩‍💼 Analistas</button>
+  <button class="tab" onclick="go('graficos')">📈 Gráficos</button>
+  <button class="tab" onclick="go('importar')">📥 Importar</button>
+</nav>
+
+<main>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="sec on">
+  <div class="sgrid">
+    <div class="sc" style="--bc:var(--p5)"><div class="sl">Total Reclamações</div><div class="sv" id="sT">0</div></div>
+    <div class="sc" style="--bc:var(--info)"><div class="sl">Contatados</div><div class="sv" id="sCt">0</div></div>
+    <div class="sc" style="--bc:var(--ok)"><div class="sl">Aval. Positivas</div><div class="sv" id="sP">0</div></div>
+    <div class="sc" style="--bc:var(--err)"><div class="sl">Aval. Negativas</div><div class="sv" id="sN">0</div></div>
+    <div class="sc" style="--bc:var(--warn)"><div class="sl">Pendentes</div><div class="sv" id="sPend">0</div></div>
+    <div class="sc" style="--bc:var(--g500)"><div class="sl">Sem Possibilidade</div><div class="sv" id="sSP">0</div></div>
+  </div>
+  <div class="cgrid">
+    <div class="cc"><h3>Reclamações × Contatados por Mês</h3><div class="cw"><canvas id="c1"></canvas></div></div>
+    <div class="cc"><h3>Avaliações Positivas × Negativas</h3><div class="cw"><canvas id="c2"></canvas></div></div>
+    <div class="cc"><h3>Reclamações × Avaliações Positivas</h3><div class="cw"><canvas id="c3"></canvas></div></div>
+    <div class="cc"><h3>Reclamações × Contatados × Sem Possibilidade</h3><div class="cw"><canvas id="c4"></canvas></div></div>
+  </div>
+</section>
+
+<!-- RECLAMAÇÕES -->
+<section id="reclamacoes" class="sec">
+  <div class="mpbar">
+    <span>📅 Filtrar por mês:</span>
+    <div class="pills" id="pills"><button class="pill on" onclick="fMonth('all')">Todos</button></div>
+  </div>
+  <div class="tcrd">
+    <div class="th">
+      <h3>Lista de Reclamações</h3>
+      <input type="text" class="srch" placeholder="🔍 Buscar ID, TAG, Analista..." oninput="srch(this.value)">
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th>Mês</th><th>Data Reclamação</th><th>ID HugMe</th><th>Motivo</th><th>Analista</th>
+          <th>Status Contato</th><th>Data Contato</th><th>Avaliação</th><th>Status</th>
+        </tr></thead>
+        <tbody id="tb"><tr><td colspan="9" style="text-align:center;padding:40px;color:var(--g500)">Importe uma planilha para ver os dados</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ANALISTAS -->
+<section id="analistas" class="sec">
+  <div class="agrid">
+    <div class="ac" style="--tc:#a855f7">
+      <h4>👩 Sara</h4>
+      <div class="arow"><span class="al">Total atribuídos</span><span class="av" id="saT">0</span></div>
+      <div class="arow"><span class="al">Contatados</span><span class="av" id="saCt">0</span></div>
+      <div class="arow"><span class="al">Avaliações positivas</span><span class="av" id="saP" style="color:var(--ok)">0</span></div>
+      <div class="arow"><span class="al">Avaliações negativas</span><span class="av" id="saN" style="color:var(--err)">0</span></div>
+      <div class="arow"><span class="al">Taxa de sucesso</span><span class="av" id="saTx">—</span></div>
+      <div class="pbar"><div class="pb" id="saBar" style="width:0%"></div></div>
+    </div>
+    <div class="ac" style="--tc:#6d1fd4">
+      <h4>👩 Karen</h4>
+      <div class="arow"><span class="al">Total atribuídos</span><span class="av" id="kaT">0</span></div>
+      <div class="arow"><span class="al">Contatados</span><span class="av" id="kaCt">0</span></div>
+      <div class="arow"><span class="al">Avaliações positivas</span><span class="av" id="kaP" style="color:var(--ok)">0</span></div>
+      <div class="arow"><span class="al">Avaliações negativas</span><span class="av" id="kaN" style="color:var(--err)">0</span></div>
+      <div class="arow"><span class="al">Taxa de sucesso</span><span class="av" id="kaTx">—</span></div>
+      <div class="pbar"><div class="pb" id="kaBar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="cgrid">
+    <div class="cc"><h3>Contatos por Analista</h3><div class="cw"><canvas id="c5"></canvas></div></div>
+    <div class="cc"><h3>Avaliações por Analista</h3><div class="cw"><canvas id="c6"></canvas></div></div>
+  </div>
+</section>
+
+<!-- GRÁFICOS -->
+<section id="graficos" class="sec">
+  <div class="cgrid">
+    <div class="cc"><h3>Volume de reclamações por mês</h3><div class="cw" style="height:260px"><canvas id="c7"></canvas></div></div>
+    <div class="cc"><h3>Funil: Reclamações → Contatos → Avaliações → Positivas</h3><div class="cw" style="height:260px"><canvas id="c8"></canvas></div></div>
+  </div>
+</section>
+
+<!-- IMPORTAR -->
+<section id="importar" class="sec">
+
+  <div class="card">
+    <h2>⚙️ Configuração Supabase</h2>
+    <p>Configure a conexão para salvar e sincronizar dados com toda a equipe.</p>
+    <div class="frow">
+      <div class="fg"><label>Supabase URL</label><input id="sbUrl" type="text" placeholder="https://xxxx.supabase.co"/></div>
+      <div class="fg"><label>Supabase Anon Key</label><input id="sbKey" type="text" placeholder="eyJhbGci..."/></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-p" onclick="saveCfg()">💾 Salvar</button>
+      <button class="btn btn-ok" onclick="initDB()">🗄️ Criar Tabela no DB</button>
+      <span id="dbSt" style="font-size:.83rem;color:var(--g500)"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📥 Importar Planilha CSV</h2>
+    <p>Importe o relatório exportado do Reclame Aqui (Relatório de Tickets).</p>
+    <div class="info-box">
+      <strong>Formato esperado:</strong> O CRM lê automaticamente as colunas do relatório oficial do Reclame Aqui:<br>
+      <code>Id HugMe · Data Reclamação · Status RA · Tags · Agentes · Motivo reclamação · ...</code><br>
+      O mês é detectado automaticamente pela coluna <strong>Data Reclamação</strong> — cada reclamação vai para o mês correto!
+    </div>
+    <div class="drop" onclick="document.getElementById('fi').click()" id="dz">
+      <div class="di">📂</div>
+      <h3>Clique ou arraste o arquivo CSV aqui</h3>
+      <p>Exportado direto do Reclame Aqui → Relatório de Tickets</p>
+    </div>
+    <input type="file" id="fi" accept=".csv" onchange="handleFile(event)">
+    <div id="prev" style="display:none">
+      <p style="font-weight:600;color:var(--p7);margin-bottom:10px">Prévia (<span id="prevCount">0</span> registros encontrados):</p>
+      <div class="tw" style="max-height:220px">
+        <table><thead><tr id="ph"></tr></thead><tbody id="pb2"></tbody></table>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px">
+        <button class="btn btn-p" id="bImp" onclick="doImport()">⬆️ Importar</button>
+        <button class="btn btn-g" onclick="cancelPrev()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<!-- CONFIG MODAL -->
+<div class="mo" id="cfgMo">
+  <div class="md">
+    <h2>⚙️ Configuração Supabase</h2>
+    <div class="fg" style="margin-bottom:12px"><label>Supabase URL</label><input id="mUrl" type="text" placeholder="https://xxxx.supabase.co"/></div>
+    <div class="fg"><label>Supabase Anon Key</label><input id="mKey" type="text" placeholder="eyJhbGci..."/></div>
+    <div class="mact">
+      <button class="btn btn-g" onclick="closeCfg()">Fechar</button>
+      <button class="btn btn-p" onclick="saveCfgMo()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const S = {
+  all: [],       // todos os registros do DB
+  view: [],      // registros filtrados pelo mês selecionado
+  month: 'all',
+  url: '',
+  key: '',
+  charts: {}
+};
+let pending = [];
+
+// ============================================================
+// CREDENCIAIS FIXAS — não precisa configurar
+// ============================================================
+const FIXED_URL = 'https://ghyahzpjcecuyyhzccjw.supabase.co';
+const FIXED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdoeWFoenBqY2VjdXl5aHpjY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNTIxMjYsImV4cCI6MjA5MTkyODEyNn0._BrFCrjVsGADv9GORCijD2b90YIC6qRaMLV7LwWaWog';
+
+// ============================================================
+// BOOT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  S.url = FIXED_URL;
+  S.key = FIXED_KEY;
+  document.getElementById('sbUrl').value = S.url;
+  document.getElementById('sbKey').value = S.key;
+  document.getElementById('mUrl').value = S.url;
+  document.getElementById('mKey').value = S.key;
+  setConn(true);
+  loadDB();
+  dragSetup();
+  buildCharts();
+});
+
+// ============================================================
+// CONFIG
+// ============================================================
+function openCfg(){ document.getElementById('mUrl').value=S.url; document.getElementById('mKey').value=S.key; document.getElementById('cfgMo').classList.add('show'); }
+function closeCfg(){ document.getElementById('cfgMo').classList.remove('show'); }
+function saveCfg(){
+  setConn(true); toast('Configuração salva!','ok');
+}
+function saveCfgMo(){
+  setConn(true); closeCfg();
+  toast('Configuração salva!','ok');
+}
+function setConn(ok){ document.getElementById('connStatus').textContent = ok ? '🟢 Conectado' : '⚪ Não conectado'; }
+function ls(k,v){ localStorage.setItem(k,v); }
+
+// ============================================================
+// SUPABASE
+// ============================================================
+async function sb(path, opts={}){
+  const res = await fetch(S.url.replace(/\/$/,'')+path, {
+    ...opts,
+    headers:{ apikey:S.key, Authorization:'Bearer '+S.key, 'Content-Type':'application/json', Prefer:'return=representation', ...(opts.headers||{}) }
+  });
+  if(!res.ok){ const t=await res.text(); throw new Error(t); }
+  return res.json().catch(()=>({}));
+}
+
+async function initDB(){
+  const st=document.getElementById('dbSt');
+  st.textContent='⏳ Verificando...';
+  try{
+    await sb('/rest/v1/reclamacoes?limit=1');
+    st.textContent='✅ Tabela existe e está conectada!';
+    toast('Banco conectado!','ok');
+  }catch(e){
+    st.textContent='⚠️ Tabela não encontrada — copie o SQL abaixo e execute no Supabase';
+    const sql=`CREATE TABLE IF NOT EXISTS reclamacoes (
+  id BIGSERIAL PRIMARY KEY,
+  id_hugme TEXT NOT NULL,
+  data_reclamacao TEXT,
+  mes TEXT,
+  mes_num INT,
+  ano TEXT,
+  motivo TEXT,
+  analista TEXT DEFAULT '',
+  status_contato TEXT DEFAULT 'Pendente',
+  data_contato TEXT DEFAULT '',
+  avaliacao TEXT DEFAULT 'Pendente',
+  tags TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE reclamacoes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all" ON reclamacoes FOR ALL USING (true) WITH CHECK (true);`;
+    try{ await navigator.clipboard.writeText(sql); }catch(x){}
+    alert('Execute este SQL no Supabase (SQL Editor → New Query):\n\n'+sql);
+  }
+}
+
+async function loadDB(){
+  if(!S.url||!S.key) return;
+  try{
+    const d = await sb('/rest/v1/reclamacoes?select=*&order=mes_num.asc,data_reclamacao.asc&limit=3000');
+    S.all = Array.isArray(d)?d:[];
+    applyFilter();
+    renderAll();
+    setConn(true);
+  }catch(e){ setConn(false); }
+}
+
+async function saveMany(arr){
+  for(let i=0;i<arr.length;i+=100){
+    await sb('/rest/v1/reclamacoes',{method:'POST',body:JSON.stringify(arr.slice(i,i+100))});
+  }
+}
+
+async function upd(id,fields){
+  if(S.url&&S.key){
+    try{ await sb(`/rest/v1/reclamacoes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify(fields)}); }catch(x){}
+  }
+}
+
+// ============================================================
+// CSV PARSING — formato real do Reclame Aqui
+// ============================================================
+function parseCSV(text){
+  // Split lines respecting quoted fields
+  const lines = [];
+  let cur='', inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(c==='"'){ inQ=!inQ; }
+    else if(c==='\n'&&!inQ){ lines.push(cur); cur=''; }
+    else{ cur+=c; }
+  }
+  if(cur.trim()) lines.push(cur);
+
+  const nonEmpty = lines.map(l=>l.trim()).filter(Boolean);
+  if(!nonEmpty.length) return [];
+
+  // Detect header row
+  const headerIdx = nonEmpty.findIndex(l => /id\s*hugme/i.test(l));
+  if(headerIdx===-1) return [];
+
+  const headers = splitCSVLine(nonEmpty[headerIdx]).map(h=>h.trim().toLowerCase());
+  const dataLines = nonEmpty.slice(headerIdx+1);
+
+  // Column index finder (flexible)
+  const col = (names) => {
+    for(const n of names){
+      const i = headers.findIndex(h=>h.includes(n.toLowerCase()));
+      if(i!==-1) return i;
+    }
+    return -1;
+  };
+
+  const iId    = col(['id hugme','id_hugme','idhugme']);
+  const iData  = col(['data reclamação','data_reclamacao','data reclamacao']);
+  const iTags  = col(['tags']);
+  const iMot   = col(['motivo reclamação','motivo_reclamacao','motivo reclamacao']);
+  const iAgent = col(['agentes','agente']);
+
+  const MONTHS_PT = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  return dataLines.map(line=>{
+    const cols = splitCSVLine(line);
+    const get = i => (i>=0 && i<cols.length) ? cols[i].trim() : '';
+
+    const idHugme    = get(iId);
+    const dataRec    = get(iData);   // dd/mm/yyyy hh:mm
+    const tags       = get(iTags);
+    const motivo     = get(iMot);
+    const agenteCSV  = get(iAgent);
+
+    if(!idHugme) return null;
+
+    // Extract date parts
+    let mes='—', mesNum=0, ano='2026', dataFmt='';
+    const dm = dataRec.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    if(dm){
+      mesNum = parseInt(dm[2]);
+      mes = MONTHS_PT[mesNum] || dm[2];
+      ano = dm[3];
+      dataFmt = `${dm[1]}/${dm[2]}/${dm[3]}`;
+    }
+
+    // Detect analyst: first from Agentes column, fallback from Tags
+    let analista = '';
+    if(/\bsara\b/i.test(agenteCSV)) analista='Sara';
+    else if(/\bkaren\b/i.test(agenteCSV)) analista='Karen';
+    else if(/\bsara\b/i.test(tags)) analista='Sara';
+    else if(/\bkaren\b/i.test(tags)) analista='Karen';
+
+    return {
+      id_hugme: idHugme,
+      data_reclamacao: dataFmt,
+      mes,
+      mes_num: mesNum,
+      ano,
+      motivo: motivo || '—',
+      analista,
+      status_contato: 'Pendente',
+      data_contato: '',
+      avaliacao: 'Pendente',
+      tags
+    };
+  }).filter(Boolean);
+}
+
+function splitCSVLine(line){
+  const cols=[];
+  let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){ inQ=!inQ; }
+    else if(c===','&&!inQ){ cols.push(cur.trim()); cur=''; }
+    else{ cur+=c; }
+  }
+  cols.push(cur.trim());
+  return cols;
+}
+
+// ============================================================
+// FILE HANDLING
+// ============================================================
+function dragSetup(){
+  const dz=document.getElementById('dz');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');const f=e.dataTransfer.files[0];if(f)processFile(f);});
+}
+function handleFile(e){ if(e.target.files[0]) processFile(e.target.files[0]); }
+
+function processFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const parsed = parseCSV(e.target.result);
+    if(!parsed.length){ toast('Nenhum registro válido encontrado — verifique o formato do arquivo','err'); return; }
+    pending=parsed;
+    showPrev();
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function showPrev(){
+  document.getElementById('prevCount').textContent=pending.length;
+  document.getElementById('ph').innerHTML='<th>Mês</th><th>Data</th><th>ID HugMe</th><th>Analista</th><th>Motivo</th>';
+  document.getElementById('pb2').innerHTML = pending.slice(0,8).map(r=>`
+    <tr>
+      <td><span class="b bp">${r.mes} ${r.ano}</span></td>
+      <td>${r.data_reclamacao}</td>
+      <td><strong>${r.id_hugme}</strong></td>
+      <td>${r.analista||'—'}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.motivo)}</td>
+    </tr>`).join('') + (pending.length>8?`<tr><td colspan="5" style="text-align:center;color:var(--g500);padding:8px">...e mais ${pending.length-8} registros</td></tr>`:'');
+  document.getElementById('prev').style.display='block';
+}
+
+async function doImport(){
+  const btn=document.getElementById('bImp');
+  btn.innerHTML='<span class="spin"></span> Importando...';
+  btn.disabled=true;
+  try{
+    if(S.url&&S.key){
+      await saveMany(pending);
+      await loadDB();
+    } else {
+      S.all=[...S.all,...pending.map((r,i)=>({...r,id:Date.now()+i}))];
+      applyFilter(); renderAll();
+    }
+    cancelPrev();
+    toast(`✅ ${pending.length} registros importados com sucesso!`,'ok');
+  }catch(e){
+    S.all=[...S.all,...pending.map((r,i)=>({...r,id:Date.now()+i}))];
+    applyFilter(); renderAll();
+    cancelPrev();
+    toast('Salvo localmente (configure o Supabase para sincronizar)','ok');
+  }
+  btn.innerHTML='⬆️ Importar'; btn.disabled=false;
+}
+
+function cancelPrev(){ document.getElementById('prev').style.display='none'; document.getElementById('fi').value=''; pending=[]; }
+
+// ============================================================
+// FILTER & RENDER
+// ============================================================
+function applyFilter(){
+  S.view = S.month==='all' ? [...S.all] : S.all.filter(r=>`${r.mes} ${r.ano}`===S.month);
+}
+
+function fMonth(m){
+  S.month=m;
+  buildPills();
+  applyFilter();
+  renderAll();
+}
+
+function buildPills(){
+  const months=[...new Set(S.all.map(r=>`${r.mes_num||0}|${r.mes} ${r.ano}`))].sort((a,b)=>{
+    const [an,al]=a.split('|'), [bn,bl]=b.split('|');
+    // sort by year then month num
+    const [am,ay]=al.split(' '), [bm,by]=bl.split(' ');
+    return (ay||'0').localeCompare(by||'0')||parseInt(an)-parseInt(bn);
+  }).map(x=>x.split('|')[1]);
+  const pills=document.getElementById('pills');
+  pills.innerHTML=`<button class="pill ${S.month==='all'?'on':''}" onclick="fMonth('all')">Todos</button>`;
+  months.forEach(m=>{ pills.innerHTML+=`<button class="pill ${S.month===m?'on':''}" onclick="fMonth('${m}')">${m}</button>`; });
+}
+
+function renderAll(){
+  buildPills();
+  renderStats();
+  renderTable();
+  renderAnalistas();
+  updCharts();
+}
+
+function renderStats(){
+  const d=S.view;
+  document.getElementById('sT').textContent=d.length;
+  document.getElementById('sCt').textContent=d.filter(r=>r.status_contato==='Contatado'||r.status_contato==='Em Atendimento').length;
+  document.getElementById('sP').textContent=d.filter(r=>r.avaliacao==='Positiva').length;
+  document.getElementById('sN').textContent=d.filter(r=>r.avaliacao==='Negativa').length;
+  document.getElementById('sPend').textContent=d.filter(r=>r.status_contato==='Pendente').length;
+  document.getElementById('sSP').textContent=d.filter(r=>r.status_contato==='Sem Possibilidade').length;
+}
+
+function renderTable(q=''){
+  const tb=document.getElementById('tb');
+  const data = q ? S.view.filter(r=>(r.id_hugme+r.analista+r.motivo+r.tags+r.mes).toLowerCase().includes(q.toLowerCase())) : S.view;
+  if(!data.length){ tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:36px;color:var(--g500)">Nenhum registro encontrado</td></tr>'; return; }
+  tb.innerHTML=data.map(r=>`
+    <tr>
+      <td><span class="b bp">${r.mes||'—'} ${r.ano||''}</span></td>
+      <td style="white-space:nowrap">${r.data_reclamacao||'—'}</td>
+      <td><strong>${r.id_hugme}</strong></td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem" title="${esc(r.motivo||'')}">${r.motivo||'—'}</td>
+      <td>
+        <select class="ts" onchange="updF(${r.id},'analista',this.value)">
+          <option value="" ${!r.analista?'selected':''}>—</option>
+          <option value="Sara" ${r.analista==='Sara'?'selected':''}>Sara</option>
+          <option value="Karen" ${r.analista==='Karen'?'selected':''}>Karen</option>
+        </select>
+      </td>
+      <td>
+        <select class="ts" onchange="updF(${r.id},'status_contato',this.value)">
+          <option value="Pendente" ${r.status_contato==='Pendente'?'selected':''}>Pendente</option>
+          <option value="Contatado" ${r.status_contato==='Contatado'?'selected':''}>Contatado</option>
+          <option value="Em Atendimento" ${r.status_contato==='Em Atendimento'?'selected':''}>Em Atendimento</option>
+          <option value="Sem Possibilidade" ${r.status_contato==='Sem Possibilidade'?'selected':''}>Sem Possibilidade</option>
+        </select>
+      </td>
+      <td><input type="date" class="ti" value="${r.data_contato||''}" onchange="updF(${r.id},'data_contato',this.value)" style="width:136px"></td>
+      <td>
+        <select class="ts" onchange="updF(${r.id},'avaliacao',this.value)">
+          <option value="Pendente" ${r.avaliacao==='Pendente'?'selected':''}>Pendente</option>
+          <option value="Positiva" ${r.avaliacao==='Positiva'?'selected':''}>✅ Positiva</option>
+          <option value="Negativa" ${r.avaliacao==='Negativa'?'selected':''}>❌ Negativa</option>
+        </select>
+      </td>
+      <td><span class="b ${stBadge(r.status_contato)}">${r.status_contato}</span></td>
+    </tr>`).join('');
+}
+
+function srch(q){ renderTable(q); }
+
+function renderAnalistas(){
+  const d=S.view;
+  ['Sara','Karen'].forEach(name=>{
+    const k=name.toLowerCase().slice(0,2);
+    const mine=d.filter(r=>r.analista===name);
+    const ct=mine.filter(r=>r.status_contato==='Contatado'||r.status_contato==='Em Atendimento').length;
+    const pos=mine.filter(r=>r.avaliacao==='Positiva').length;
+    const neg=mine.filter(r=>r.avaliacao==='Negativa').length;
+    const taxa=(pos+neg)>0?Math.round(pos/(pos+neg)*100)+'%':'—';
+    document.getElementById(k+'T').textContent=mine.length;
+    document.getElementById(k+'Ct').textContent=ct;
+    document.getElementById(k+'P').textContent=pos;
+    document.getElementById(k+'N').textContent=neg;
+    document.getElementById(k+'Tx').textContent=taxa;
+    document.getElementById(k+'Bar').style.width=(pos+neg)>0?(pos/(pos+neg)*100)+'%':'0%';
+  });
+}
+
+async function updF(id,field,val){
+  const r=S.all.find(x=>x.id===id);
+  if(r) r[field]=val;
+  const rv=S.view.find(x=>x.id===id);
+  if(rv) rv[field]=val;
+  renderStats(); renderAnalistas(); updCharts();
+  await upd(id,{[field]:val});
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+const CC={p:'#8b35e8',l:'#cba8ff',g:'#22c55e',r:'#ef4444',y:'#f59e0b',b:'#3b82f6',gr:'#a8a0c0'};
+const CO={ responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{labels:{font:{family:'DM Sans'},color:'#3d3560'}}},
+  scales:{x:{ticks:{color:'#7c6f9e',font:{family:'DM Sans'}},grid:{color:'#f0ebfa'}},
+          y:{ticks:{color:'#7c6f9e',font:{family:'DM Sans'}},grid:{color:'#f0ebfa'},beginAtZero:true}} };
+
+function mkBar(id,labels,datasets){ return new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets},options:{...CO}}); }
+function mkDonut(id,labels,data,colors){ return new Chart(document.getElementById(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{family:'DM Sans'},color:'#3d3560'}}}}}); }
+
+function buildCharts(){
+  S.charts.c1=mkBar('c1',[],[{label:'Reclamações',data:[],backgroundColor:CC.l},{label:'Contatados',data:[],backgroundColor:CC.p}]);
+  S.charts.c2=mkDonut('c2',['Positivas','Negativas','Pendente'],[0,0,0],[CC.g,CC.r,CC.gr]);
+  S.charts.c3=mkBar('c3',[],[{label:'Reclamações',data:[],backgroundColor:CC.l},{label:'Avaliações Positivas',data:[],backgroundColor:CC.g}]);
+  S.charts.c4=mkBar('c4',[],[{label:'Reclamações',data:[],backgroundColor:CC.l},{label:'Contatados',data:[],backgroundColor:CC.p},{label:'Sem Possibilidade',data:[],backgroundColor:CC.y}]);
+  S.charts.c5=mkBar('c5',['Sara','Karen'],[{label:'Contatos',data:[0,0],backgroundColor:[CC.p,CC.l]}]);
+  S.charts.c6=mkBar('c6',['Sara','Karen'],[{label:'Positivas',data:[0,0],backgroundColor:CC.g},{label:'Negativas',data:[0,0],backgroundColor:CC.r}]);
+  S.charts.c7=mkBar('c7',[],[{label:'Reclamações',data:[],backgroundColor:CC.p,borderRadius:6}]);
+  S.charts.c8=new Chart(document.getElementById('c8'),{type:'bar',data:{labels:['Total','Contatados','Avaliados','Positivas'],datasets:[{label:'Qtd',data:[0,0,0,0],backgroundColor:[CC.l,CC.p,CC.b,CC.g],borderRadius:8}]},options:{...CO,indexAxis:'y'}});
+}
+
+function getMonths(){
+  const uniq=[...new Set(S.all.map(r=>`${String(r.mes_num||0).padStart(2,'0')}|${r.mes} ${r.ano}`))].sort();
+  return uniq.map(x=>x.split('|')[1]);
+}
+
+function updCharts(){
+  const months=getMonths();
+  const byM=m=>S.all.filter(r=>`${r.mes} ${r.ano}`===m);
+  const d=S.view;
+
+  const upCh=(c,labels,datasets)=>{ c.data.labels=labels; datasets.forEach((ds,i)=>c.data.datasets[i].data=ds); c.update(); };
+
+  upCh(S.charts.c1, months, [months.map(m=>byM(m).length), months.map(m=>byM(m).filter(r=>r.status_contato==='Contatado'||r.status_contato==='Em Atendimento').length)]);
+  S.charts.c2.data.datasets[0].data=[d.filter(r=>r.avaliacao==='Positiva').length,d.filter(r=>r.avaliacao==='Negativa').length,d.filter(r=>r.avaliacao==='Pendente').length]; S.charts.c2.update();
+  upCh(S.charts.c3, months, [months.map(m=>byM(m).length), months.map(m=>byM(m).filter(r=>r.avaliacao==='Positiva').length)]);
+  upCh(S.charts.c4, months, [months.map(m=>byM(m).length), months.map(m=>byM(m).filter(r=>r.status_contato==='Contatado'||r.status_contato==='Em Atendimento').length), months.map(m=>byM(m).filter(r=>r.status_contato==='Sem Possibilidade').length)]);
+  upCh(S.charts.c5, ['Sara','Karen'], [['Sara','Karen'].map(n=>d.filter(r=>r.analista===n&&(r.status_contato==='Contatado'||r.status_contato==='Em Atendimento')).length)]);
+  S.charts.c6.data.datasets[0].data=['Sara','Karen'].map(n=>d.filter(r=>r.analista===n&&r.avaliacao==='Positiva').length);
+  S.charts.c6.data.datasets[1].data=['Sara','Karen'].map(n=>d.filter(r=>r.analista===n&&r.avaliacao==='Negativa').length);
+  S.charts.c6.update();
+  upCh(S.charts.c7, months, [months.map(m=>byM(m).length)]);
+  const tot=d.length,ct=d.filter(r=>r.status_contato==='Contatado'||r.status_contato==='Em Atendimento').length,av=d.filter(r=>r.avaliacao!=='Pendente').length,pos=d.filter(r=>r.avaliacao==='Positiva').length;
+  S.charts.c8.data.datasets[0].data=[tot,ct,av,pos]; S.charts.c8.update();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function go(name){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.getElementById(name).classList.add('on');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  const m={dashboard:0,reclamacoes:1,analistas:2,graficos:3,importar:4};
+  document.querySelectorAll('.tab')[m[name]].classList.add('on');
+}
+function stBadge(s){ return {Contatado:'bb',Pendente:'by','Sem Possibilidade':'bl','Em Atendimento':'bp'}[s]||'bl'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show '+type;
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>
